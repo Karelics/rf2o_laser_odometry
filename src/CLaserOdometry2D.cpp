@@ -23,8 +23,8 @@ namespace rf2o {
 // CLaserOdometry2D
 //---------------------------------------------
 
-CLaserOdometry2D::CLaserOdometry2D() :
-  Node("CLaserOdometry2D"),
+CLaserOdometry2D::CLaserOdometry2D(rclcpp::Logger logger) :
+  logger_(logger),
   verbose(false),
   module_initialized(false),
   first_laser_scan(true),
@@ -36,7 +36,6 @@ CLaserOdometry2D::CLaserOdometry2D() :
   robot_pose_(Pose3d::Identity()),
   robot_oldpose_(Pose3d::Identity())
 {
-  
 }
 
 void CLaserOdometry2D::setLaserPose(const Pose3d& laser_pose)
@@ -56,7 +55,7 @@ void CLaserOdometry2D::init(const sensor_msgs::msg::LaserScan& scan,
                             const geometry_msgs::msg::Pose& initial_robot_pose)
 {
   //Got an initial scan laser, obtain its parametes
-  RCLCPP_INFO(get_logger(), "[rf2o] Got first Laser Scan .... Configuring node");
+  RCLCPP_INFO(logger_, "[rf2o] Got first Laser Scan... Configuring node");
 
   width = scan.ranges.size();    // Num of samples (size) of the scan laser
 
@@ -75,7 +74,7 @@ void CLaserOdometry2D::init(const sensor_msgs::msg::LaserScan& scan,
   robot_initial_pose.translation()(0) = initial_robot_pose.position.x;
   robot_initial_pose.translation()(1) = initial_robot_pose.position.y;
 
-  //RCLCPP_INFO_STREAM(get_logger(), "[rf2o] Setting origin at:\n"<< robot_initial_pose.matrix());
+  //RCLCPP_INFO_STREAM(logger_, "[rf2o] Setting origin at:\n"<< robot_initial_pose.matrix());
 
   //Set the initial pose
   laser_pose_    = robot_initial_pose * laser_pose_on_robot_;
@@ -157,6 +156,7 @@ void CLaserOdometry2D::init(const sensor_msgs::msg::LaserScan& scan,
 
   module_initialized = true;
   last_odom_time = scan.header.stamp;
+  RCLCPP_INFO(logger_, "[rf2o] Node configured");
 }
 
 const Pose3d& CLaserOdometry2D::getIncrement() const
@@ -188,7 +188,7 @@ bool CLaserOdometry2D::odometryCalculation(const sensor_msgs::msg::LaserScan& sc
   //copy laser scan to internal variable
   range_wf = Eigen::Map<const Eigen::MatrixXf>(scan.ranges.data(), width, 1);
 
-  auto start = get_clock()->now();
+  auto start = std::chrono::system_clock::now();
 
   createImagePyramid();
 
@@ -249,10 +249,10 @@ bool CLaserOdometry2D::odometryCalculation(const sensor_msgs::msg::LaserScan& sc
     if (!filterLevelSolution()) return false;
   }
 
-  auto m_runtime = get_clock()->now() - start;
+  auto end = std::chrono::system_clock::now();
+  double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-  RCLCPP_INFO(get_logger(), "[rf2o] execution time (ms): %f",
-                m_runtime.seconds()*double(1000));
+  RCLCPP_DEBUG(logger_, "[rf2o] execution time (ms): %f", time_elapsed);
 
   //Update poses
   PoseUpdate();
@@ -716,7 +716,7 @@ void CLaserOdometry2D::solveSystemNonLinear()
   cov_odo = (1.f/float(num_valid_range-3))*AtA.inverse()*res.squaredNorm();
   kai_loc_level_ = Var;
 
-  //RCLCPP_INFO_STREAM(get_logger(), "[rf2o] COV_ODO:\n" << cov_odo);
+  //RCLCPP_INFO_STREAM(logger_, "[rf2o] COV_ODO:\n" << cov_odo);
 }
 
 void CLaserOdometry2D::Reset(const Pose3d& ini_pose/*, CObservation2DRangeScan scan*/)
@@ -812,7 +812,7 @@ bool CLaserOdometry2D::filterLevelSolution()
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXf> eigensolver(cov_odo);
   if (eigensolver.info() != Eigen::Success)
   {
-    RCLCPP_WARN(get_logger(), "[rf2o] ERROR: Eigensolver couldn't find a solution. Pose is not updated");
+    RCLCPP_WARN(logger_, "[rf2o] ERROR: Eigensolver couldn't find a solution. Pose is not updated");
     return false;
   }
 
@@ -935,7 +935,7 @@ void CLaserOdometry2D::PoseUpdate()
   kai_loc_old_(1) = -kai_abs_(0)*std::sin(phi) + kai_abs_(1)*std::cos(phi);
   kai_loc_old_(2) =  kai_abs_(2);
 
-  RCLCPP_INFO(get_logger(), "[rf2o] LASERodom = [%f %f %f]",
+  RCLCPP_DEBUG(logger_, "[rf2o] LASERodom = [%f %f %f]",
                 laser_pose_.translation()(0),
                 laser_pose_.translation()(1),
                 rf2o::getYaw(laser_pose_.rotation()));
@@ -943,7 +943,7 @@ void CLaserOdometry2D::PoseUpdate()
   //Compose Transformations
   robot_pose_ = laser_pose_ * laser_pose_on_robot_inv_;
 
-  RCLCPP_INFO(get_logger(), "BASEodom = [%f %f %f]",
+  RCLCPP_DEBUG(logger_, "BASEodom = [%f %f %f]",
                 robot_pose_.translation()(0),
                 robot_pose_.translation()(1),
                 rf2o::getYaw(robot_pose_.rotation()));

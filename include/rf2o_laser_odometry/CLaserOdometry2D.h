@@ -19,6 +19,7 @@
 #define CLaserOdometry2D_H
 
 // std header
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <numeric>
@@ -71,11 +72,10 @@ using Pose3d = Eigen::Isometry3d;
 using MatrixS31 = Eigen::Matrix<Scalar, 3, 1>;
 using IncrementCov = Eigen::Matrix<Scalar, 3, 3>;
 
-class CLaserOdometry2D: public rclcpp::Node
+class CLaserOdometry2D
 {
 public:
-
-  CLaserOdometry2D();
+  CLaserOdometry2D(rclcpp::Logger logger = rclcpp::get_logger("laser_odom_2d"));
 
   void init(const sensor_msgs::msg::LaserScan& scan,
             const geometry_msgs::msg::Pose& initial_robot_pose);
@@ -90,6 +90,7 @@ public:
 
   const IncrementCov& getIncrementCovariance() const;
 
+  rclcpp::Logger logger_;
   Pose3d& getPose();
   const Pose3d& getPose() const;
   bool verbose, module_initialized, first_laser_scan;

@@ -15,6 +15,7 @@ class CLaserOdometry2DNode : public rclcpp::Node
 {
 public:
   CLaserOdometry2DNode();
+  rclcpp::TimerBase::SharedPtr process_timer;
   void process();
   void publish();
   bool setLaserPoseFromTf();
@@ -59,9 +60,9 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   this->get_parameter("laser_scan_topic", laser_scan_topic);
   this->declare_parameter<std::string>("odom_topic", "/odom_rf2o");
   this->get_parameter("odom_topic", odom_topic);
-  this->declare_parameter<std::string>("base_frame_id", "/base_link");
+  this->declare_parameter<std::string>("base_frame_id", "base_link");
   this->get_parameter("base_frame_id", base_frame_id);
-  this->declare_parameter<std::string>("odom_frame_id", "/odom");
+  this->declare_parameter<std::string>("odom_frame_id", "odom");
   this->get_parameter("odom_frame_id", odom_frame_id);
   this->declare_parameter<bool>("publish_tf", true);
   this->get_parameter("publish_tf", publish_tf);
@@ -101,4 +102,10 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   //Init variables
   rf2o_ref.module_initialized = false;
   rf2o_ref.first_laser_scan   = true;
+
+  double period = 1.0 / freq;
+
+  process_timer = create_wall_timer(
+    std::chrono::duration<double>(period),
+    std::bind(&CLaserOdometry2DNode::process, this));
 }

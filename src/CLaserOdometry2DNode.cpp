@@ -76,7 +76,12 @@ void CLaserOdometry2DNode::process()
   }
   else
   {
-    RCLCPP_WARN(get_logger(), "Waiting for laser_scans....") ;
+    RCLCPP_WARN_THROTTLE(
+      get_logger(),
+      *get_clock(),
+      5000,
+      "[5s throttled] Waiting for laser_scans...."
+    );
   }
 }
 
@@ -173,13 +178,9 @@ void CLaserOdometry2DNode::publish()
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  auto myLaserOdomNode = std::make_shared<rf2o::CLaserOdometry2DNode>() ;
-  rclcpp::Rate rate(myLaserOdomNode->freq);
-  while (rclcpp::ok()){
-      myLaserOdomNode->process();
-      rclcpp::spin_some(myLaserOdomNode);
-      rate.sleep();
-  }
+  auto myLaserOdomNode = std::make_shared<rf2o::CLaserOdometry2DNode>();
+  rclcpp::spin(myLaserOdomNode);
+  rclcpp::shutdown();
   return 0;
 
 }
