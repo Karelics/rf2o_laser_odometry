@@ -26,7 +26,6 @@ find_package(Eigen3 REQUIRED)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_BINARY_DIR}
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
@@ -54,7 +53,7 @@ ament_target_dependencies(lib_laser_odometry
   ${laser_odom_dependencies}
 )
 add_executable(rf2o_laser_odometry_exe
-  ${laser_odometry_src}
+  src/CLaserOdometry2DNode.cpp
 )
 target_link_libraries(rf2o_laser_odometry_exe
   lib_laser_odometry

@@ -24,10 +24,10 @@ namespace rf2o {
 //---------------------------------------------
 
 CLaserOdometry2D::CLaserOdometry2D(rclcpp::Logger logger) :
-  logger_(logger),
   verbose(false),
   module_initialized(false),
   first_laser_scan(true),
+  logger_(logger),
   last_increment_(Pose3d::Identity()),
   laser_pose_on_robot_(Pose3d::Identity()),
   laser_pose_on_robot_inv_(Pose3d::Identity()),

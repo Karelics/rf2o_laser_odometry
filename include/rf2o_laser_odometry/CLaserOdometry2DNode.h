@@ -15,7 +15,6 @@ class CLaserOdometry2DNode : public rclcpp::Node
 {
 public:
   CLaserOdometry2DNode();
-  rclcpp::TimerBase::SharedPtr process_timer;
   void process();
   void publish();
   bool setLaserPoseFromTf();
@@ -38,7 +37,8 @@ public:
   std::unique_ptr<tf2_ros::TransformBroadcaster> odom_broadcaster;
   nav_msgs::msg::Odometry     initial_robot_pose;
 
-  //Subscriptions & Publishers
+  // Timers, Subscriptions & Publishers
+  rclcpp::TimerBase::SharedPtr process_timer;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr  laser_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr  initPose_sub;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr  odom_pub;

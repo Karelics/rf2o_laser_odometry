@@ -90,11 +90,11 @@ public:
 
   const IncrementCov& getIncrementCovariance() const;
 
-  rclcpp::Logger logger_;
   Pose3d& getPose();
   const Pose3d& getPose() const;
   bool verbose, module_initialized, first_laser_scan;
   rclcpp::Time last_odom_time, current_scan_time;
+  rclcpp::Logger logger_;
 
   // Internal Data
   std::vector<Eigen::MatrixXf> range;
