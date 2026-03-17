@@ -24,47 +24,58 @@ find_package(nav_msgs REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-set(EXECUTABLE_NAME "rf2o_laser_odometry_node")
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-add_executable(${EXECUTABLE_NAME} 
-    src/CLaserOdometry2DNode.cpp
-    src/CLaserOdometry2D.cpp)
-
 include_directories(
-  include include/
-)
-
-include_directories(
-  
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-set(DEPENDENCIES
-  "rclcpp"           
-  "std_msgs"         
-  "geometry_msgs" 
+set(laser_odom_dependencies
+  "rclcpp"
+  "std_msgs"
+  "geometry_msgs"
   "tf2_geometry_msgs"
   "tf2"
   "tf2_ros"
   "sensor_msgs"
   "nav_msgs"
 )
-ament_target_dependencies(${EXECUTABLE_NAME} ${DEPENDENCIES})
 
-## Declare a cpp library
-add_library(${PROJECT_NAME} src/CLaserOdometry2D.cpp)
+set(laser_odometry_src
+  src/CLaserOdometry2DNode.cpp
+  src/CLaserOdometry2D.cpp
+)
 
-## Declare a cpp executable
-ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+add_library(lib_laser_odometry SHARED
+  ${laser_odometry_src}
+)
+ament_target_dependencies(lib_laser_odometry
+  ${laser_odom_dependencies}
+)
+add_executable(rf2o_laser_odometry_exe
+  src/CLaserOdometry2DNode.cpp
+)
+target_link_libraries(rf2o_laser_odometry_exe
+  lib_laser_odometry
+)
+install(TARGETS
+  rf2o_laser_odometry_exe
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS
+  lib_laser_odometry
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 
-install(TARGETS ${EXECUTABLE_NAME}
-  DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include/
+)
 
-install(
-  DIRECTORY launch  
+install(DIRECTORY
+  launch
   DESTINATION share/${PROJECT_NAME})
 
 ament_package()
