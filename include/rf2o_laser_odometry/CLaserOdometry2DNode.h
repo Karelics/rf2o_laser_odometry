@@ -26,6 +26,8 @@ public:
 
   std::string         laser_scan_topic;
   std::string         odom_topic;
+  std::vector<double> odom_pose_covariance;
+  std::vector<double> odom_vel_covariance;
   std::string         base_frame_id;
   std::string         odom_frame_id;
   std::string         init_pose_from_topic;
@@ -60,6 +62,22 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   this->get_parameter("laser_scan_topic", laser_scan_topic);
   this->declare_parameter<std::string>("odom_topic", "/odom_rf2o");
   this->get_parameter("odom_topic", odom_topic);
+  this->declare_parameter<std::vector<double>>("odom_pose_covariance",
+    {0.0025, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0025, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.01});
+  this->get_parameter("odom_pose_covariance", odom_pose_covariance);
+  this->declare_parameter<std::vector<double>>("odom_vel_covariance",
+    {0.0001, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0001, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.01});
+  this->get_parameter("odom_vel_covariance", odom_vel_covariance);
   this->declare_parameter<std::string>("base_frame_id", "base_link");
   this->get_parameter("base_frame_id", base_frame_id);
   this->declare_parameter<std::string>("odom_frame_id", "odom");
