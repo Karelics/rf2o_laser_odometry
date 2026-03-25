@@ -81,8 +81,8 @@ void CLaserOdometry2DNode::process()
       5000,
       "[5s throttled] Waiting for laser_scans...."
     );
-    publish();
   }
+  publish();
 }
 
 //-----------------------------------------------------------------------------------
