@@ -137,7 +137,6 @@ void CLaserOdometry2DNode::publish()
   tf_quaternion.setRPY(0.0, 0.0, rf2o::getYaw(rf2o_ref.robot_pose_.rotation()));
   geometry_msgs::msg::Quaternion quaternion = tf2::toMsg(tf_quaternion);
   nav_msgs::msg::Odometry odom;
-
   odom.header.stamp = rf2o_ref.last_odom_time;
   odom.header.frame_id = odom_frame_id;
   //set the position
@@ -145,11 +144,13 @@ void CLaserOdometry2DNode::publish()
   odom.pose.pose.position.y = rf2o_ref.robot_pose_.translation()(1);
   odom.pose.pose.position.z = 0.0;
   odom.pose.pose.orientation = quaternion;
+  odom.pose.covariance = odom_pose_covariance;
   //set the velocity
   odom.child_frame_id = base_frame_id;
   odom.twist.twist.linear.x = rf2o_ref.lin_speed;    //linear speed
   odom.twist.twist.linear.y = 0.0;
   odom.twist.twist.angular.z = rf2o_ref.ang_speed;   //angular speed
+  odom.twist.covariance = odom_vel_covariance;
   //publish the message
   odom_pub->publish(odom);
 

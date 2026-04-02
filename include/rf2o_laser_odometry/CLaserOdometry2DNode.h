@@ -26,6 +26,8 @@ public:
 
   std::string         laser_scan_topic;
   std::string         odom_topic;
+  std::array<double, 36> odom_pose_covariance;
+  std::array<double, 36> odom_vel_covariance;
   std::string         base_frame_id;
   std::string         odom_frame_id;
   std::string         init_pose_from_topic;
@@ -50,6 +52,17 @@ public:
   void initPoseCallBack(const nav_msgs::msg::Odometry::SharedPtr new_initPose);
 };
 
+std::array<double, 36> cast_covar_vector_to_array(std::vector<double> & vector)
+{
+  std::array<double, 36> array;
+
+  for (int i = 0; i < 36; i++) {
+    array[i] = vector[i];
+  }
+  return array;
+}
+
+
 CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
 {
   RCLCPP_INFO(get_logger(), "Initializing RF2O node...");
@@ -60,6 +73,25 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   this->get_parameter("laser_scan_topic", laser_scan_topic);
   this->declare_parameter<std::string>("odom_topic", "/odom_rf2o");
   this->get_parameter("odom_topic", odom_topic);
+  this->declare_parameter<std::vector<double>>("odom_pose_covariance",
+    {0.0025, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0025, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.01});
+  std::vector<double> temp_covariance_vector;
+  this->get_parameter("odom_pose_covariance", temp_covariance_vector);
+  odom_pose_covariance = cast_covar_vector_to_array(temp_covariance_vector);
+  this->declare_parameter<std::vector<double>>("odom_vel_covariance",
+    {0.0001, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0001, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.01});
+  this->get_parameter("odom_vel_covariance", temp_covariance_vector);
+  odom_vel_covariance = cast_covar_vector_to_array(temp_covariance_vector);
   this->declare_parameter<std::string>("base_frame_id", "base_link");
   this->get_parameter("base_frame_id", base_frame_id);
   this->declare_parameter<std::string>("odom_frame_id", "odom");
