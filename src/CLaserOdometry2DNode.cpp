@@ -71,7 +71,7 @@ void CLaserOdometry2DNode::process()
   {
     //Process odometry estimation
     rf2o_ref.odometryCalculation(last_scan);
-  publish();
+    publish();
     new_scan_available = false; //avoids the possibility to run twice on the same laser scan
   }
   else
