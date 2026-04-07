@@ -31,6 +31,7 @@ public:
   std::string         base_frame_id;
   std::string         odom_frame_id;
   std::string         init_pose_from_topic;
+  bool                pub_y_vel;
 
   sensor_msgs::msg::LaserScan      last_scan;
   bool                        GT_pose_initialized;
@@ -100,6 +101,8 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   this->get_parameter("publish_tf", publish_tf);
   this->declare_parameter<std::string>("init_pose_from_topic", "/base_pose_ground_truth");
   this->get_parameter("init_pose_from_topic", init_pose_from_topic);
+  this->declare_parameter<bool>("pub_y_vel", false);
+  this->get_parameter("pub_y_vel", pub_y_vel);
   this->declare_parameter<double>("freq", 10.0);
   this->get_parameter("freq", freq);
 
